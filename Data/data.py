@@ -1,14 +1,15 @@
 """
 Packet dissection:
 aa - start (static)
-048002 - key (dynamic)
+048002 - key (dynamic) changes each session
 ff7905 - data (dynamic)
 aa - end (static)
+
+keys:
+068204
+048002
 """
 import serial
-
-# Temporary imports
-import time
 
 # Device used
 device = '/dev/tty.HC-06-DevB'
@@ -22,19 +23,20 @@ s.close()
 # Connects to HC-06 at a baudrate of 57600
 s = serial.Serial(port=device, baudrate=57600)
 
+# Open file to output to
 file = open('out.bin', 'wb')
 
-i = int(round(time.time() * 1000))
+# Declare blank storage packet
+packet = ''
 
 # Loop of collecting information
 while True:
-    size = s.inWaiting()  # Returns int of packets waiting to be read
-    if size:
-        print(s.read(size))
-        file.write(s.read(size))
+    data = s.read(1)
+    if data.hex() == 'aa':
+        if packet != '':
+            print(packet)
+            packet = ''
+    else:
+        packet = packet+data.hex()
 
-    if(int(round(time.time() * 1000))-i >= 1000 ):
-        break
-
-#aa04 8002 ff79 05aa
-#aa04 8002 ff7a 04aa
+    file.write(data)
