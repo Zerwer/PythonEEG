@@ -20,7 +20,6 @@ time.sleep(1)
 s.write(b'\x02')
 s.close()
 
-
 # Connects to HC-06 at a baudrate of 57600
 s = serial.Serial(port=device, baudrate=57600)
 
@@ -31,16 +30,26 @@ file2 = open('data.out', 'w')
 # Declare blank storage packet
 packet = ''
 
+# Declare blank point set
+points = []
+
+for i in range(900):
+    points.append(0)
+
 # Loop of collecting information
-while True:
-    data = s.read(1)
-    if data.hex() == 'aa':
-        if packet != '':
-            # print(int(packet[-6::], 16))
-            print(packet)
-            file2.write(str(int(packet[-6::], 16))+'\n')
-            packet = ''
-    else:
-        packet = packet+data.hex()
+def read_EEG():
+    while True:
+        data = s.read(1)
+        if data.hex() == 'aa':
+            if packet != '':
+                print(packet)
+                value = int(packet[-6::], 16)
+                file2.write(value+'\n')
+                del points[0]
+                points.append((int(packet[-6::], 16)/99000)*556)
+
+                packet = ''
+        else:
+            packet = packet+data.hex()
 
     file.write(data)
