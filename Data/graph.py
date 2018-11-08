@@ -20,7 +20,7 @@ def draw_point(points):
         i += 1
 
 
-def read_EEG():
+def read_eeg():
     # Device used
     device = '/dev/tty.HC-06-DevB'
 
@@ -64,6 +64,6 @@ def read_EEG():
         file.write(data)
 
 
-thread = threading.Thread(target=read_EEG)
+thread = threading.Thread(target=read_eeg)
 thread.start()
 root.mainloop()
