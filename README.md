@@ -1,2 +1,2 @@
 # PythonEEG
-mindset_communications_protocol.pdf
+Records eeg data for machine learning use.
