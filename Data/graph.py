@@ -50,11 +50,11 @@ def read_eeg():
         if data.hex() == 'aa':
             if packet != '':
                 # Remove first six characters (key)
-                value = int(packet[-6::], 16)
+                value = int(packet[-4::], 16)
                 file2.write(str(value)+'\n')
-                if int(packet[-6::], 16) < 99000:
+                if value < 66000:
                     del points[0]
-                    points.append((int(packet[-6::], 16)/99000)*556)
+                    points.append((value/66000)*556)
                     draw_point(points)
 
                 packet = ''
