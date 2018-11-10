@@ -1,2 +1,2 @@
-# EEGMachineLearning
-Takes EEG data and analyzes using machine learning.
+# PythonEEG
+Records eeg data for machine learning use.
