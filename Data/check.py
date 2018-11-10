@@ -5,12 +5,7 @@ import time
 # Device used
 device = '/dev/tty.HC-06-DevB'
 
-# Initialization of HC-06 at a baud rate of 9600(default) sending 0x02 to initiate (twice for certainty)
-# s = serial.Serial(port=device, baudrate=9600)
-# s.write(b'\x02')  # Must be sent in bytes
-# s.close()
-
-# Connects to HC-06 at a baudrate of 57600
+# Connects to HC-06 at a baud rate of 57600
 s = serial.Serial(port=device, baudrate=57600)
 
 s.write(b'\x00\xf8\x00\x00\x00\xe0')
