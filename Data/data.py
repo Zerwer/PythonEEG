@@ -1,6 +1,7 @@
 # See mindset_communication_protocol.pdf for packet breakdown
 import serial, time
 
+# Defines [SYNC] packet
 SYNC = 'aa'
 
 # Device used
@@ -20,12 +21,8 @@ time.sleep(0.001)
 binary_output = open('out.bin', 'wb')
 raw_data = open('data.out', 'w')
 
-sync = False
-plength = False
-payload_length = 0
-payload_storage = []
 
-
+# Calculates the checksum given the payload and corresponding checksum
 def calc_chksum(packet, chksum):
     total = 0
     for i in packet:
@@ -39,11 +36,67 @@ def calc_chksum(packet, chksum):
         print('ERROR: CHKSUM_FAILED')
         return False
 
-
+# Parse payload into raw eeg values, delta, theta, low-alpha, high-alpha, low-beta,
+# high-beta, low-gamma, and mid-gamma wave values
 def parse_payload(packet):
-    print(packet)
+    # If next byte is vlength
+    vlength = False
+    value_length = 0
+    # If next byte should be ignored
+    ignore = False
+    # If a code should be expected
+    code = True
+    # If the data is raw wave values
+    raw = False
+    raw_value = ''
+    # Saves processed values here
+    processed = []
+
+    for i in range(len(packet)):
+        if ignore:
+            ignore = False
+        # Code for 2 byte raw eeg value
+        elif code and packet[i] == '80':
+            vlength = True
+            code = False
+            raw = True
+        # Code for processed wave types payload
+        elif code and packet[i] == '83':
+            vlength = True
+            code = False
+        # Currently ignore 02-Signal quality, 04-Attention, 05-Meditation, 16-blink
+        elif code and (packet[i] == '02' or packet[i] == '04' or packet[i] == '05' or packet[i] == '16'):
+            ignore = True
+        elif vlength:
+            value_length = int(packet[i], 16)
+            vlength = False
+        elif value_length > 0 and raw:
+            raw_value += packet[i]
+            value_length -= 1
+        elif value_length > 0 and not raw:
+            processed.append(packet[i])
+            value_length -= 1
+            if value_length == 0:
+                code = True
+
+    if raw:
+        val = int(raw_value[:2], 16)*256 + int(raw_value[2:], 16)
+        if val >= 32768:
+            val-= 65536
+        # Val is final output
+        print(val)
+    else:
+        # Processed is final output
+        print(processed)
 
 
+sync = False
+plength = False
+payload_length = 0
+payload_storage = []
+
+
+# See mindset_communication_protocol.pdf for parsing
 while True:
     data = s.read().hex()
     if data == SYNC and not sync:
