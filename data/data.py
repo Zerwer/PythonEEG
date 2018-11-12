@@ -5,17 +5,9 @@ import time
 import threading
 
 
-def draw_point(points):
-    graphing_area.delete('all')  # Clear every redraw
-
-    i = 0
-    for point in points:
-        graphing_area.create_rectangle(int(i), int(int(point)/(-1))+556, int(i), int(int(point)/(-1))+556)
-        i += 1
-
-
 # Calculates the checksum given the payload and corresponding checksum
 def calc_chksum(packet, chksum):
+    # See mindset_communication_protocol.pdf for chksum
     total = 0
     for i in packet:
         total += int(i, 16)
@@ -25,7 +17,8 @@ def calc_chksum(packet, chksum):
     if total == int(chksum, 16):
         return True
     else:
-        print('ERROR: CHKSUM_FAILED')
+        # If chksum fails disregard packet
+        print('CHKSUM_FAILED')
         return False
 
 
@@ -84,9 +77,7 @@ def parse_payload(packet):
 
 
 def data_loop():
-    print('ye')
-    # Defines [SYNC] packet
-    SYNC = 'aa'
+    # How many raw values used for one graphed point
     average = 100
 
     # Device used
@@ -107,26 +98,27 @@ def data_loop():
     # binary_output = open('out.bin', 'wb')
     # raw_data = open('data.out', 'w')
 
+    # Temporary storage for parsing
     sync = False
     plength = False
     payload_length = 0
     payload_storage = []
     counter = [0, 0]
 
+    # Storage for y_values that must be graphed, must always have 900 values
     y_values = []
-
     for i in range(900):
         y_values.append(0)
 
     # See mindset_communication_protocol.pdf for parsing
     while True:
         data = s.read().hex()
-        if data == SYNC and not sync:
+        if data == 'aa' and not sync:
             sync = True
             plength = False
             payload_length = 0
             payload_storage = []
-        elif data == SYNC and sync:
+        elif data == 'aa' and sync:
             sync = False
             plength = True
         elif sync:
@@ -144,15 +136,17 @@ def data_loop():
             if value[0] == 'raw':
                 counter[0] += 1
                 counter[1] += value[1]
+                # Determine if point is to be graphed
                 if counter[0] >= average:
                     counter[1] /= average
-                    print(counter[1])
-                    y_values.append(((counter[1]+2048)/2048)*556)
+                    # Transform raw wave values for graphing
+                    y_values.append(((counter[1]+2048)/4096)*556)
                     del y_values[0]
                     counter = [0, 0]
                     draw_point(y_values)
 
 
+# Serial reader must be in separate thread, tkinter must be run on main thread
 thread = threading.Thread(target=data_loop)
 thread.start()
 
