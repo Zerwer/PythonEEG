@@ -3,6 +3,9 @@ from graphics import *
 import serial
 import time
 import threading
+import sys
+import datetime
+import argparse
 
 
 # Calculates the checksum given the payload and corresponding checksum
@@ -11,11 +14,13 @@ def calc_chksum(packet, chksum):
     total = 0
     for i in packet:
         total += int(i, 16)
+
     total &= 255
     total = ~total & 255
 
     if total == int(chksum, 16):
         return True
+
     else:
         # If chksum fails disregard packet
         print('CHKSUM_FAILED')
@@ -41,24 +46,30 @@ def parse_payload(packet):
     for i in range(len(packet)):
         if ignore:
             ignore = False
+
         # Code for 2 byte raw eeg value
         elif code and packet[i] == '80':
             vlength = True
             code = False
             raw = True
+
         # Code for processed wave types payload
         elif code and packet[i] == '83':
             vlength = True
             code = False
+
         # Currently ignore 02-Signal quality, 04-Attention, 05-Meditation, 16-blink
         elif code and (packet[i] == '02' or packet[i] == '04' or packet[i] == '05' or packet[i] == '16'):
             ignore = True
+
         elif vlength:
             value_length = int(packet[i], 16)
             vlength = False
+
         elif value_length > 0 and raw:
             raw_value += packet[i]
             value_length -= 1
+
         elif value_length > 0 and not raw:
             processed.append(packet[i])
             value_length -= 1
@@ -78,7 +89,7 @@ def parse_payload(packet):
 
 def data_loop():
     # How many raw values used for one graphed point
-    average = 100
+    average = 10
 
     # Device used
     device = '/dev/tty.HC-06-DevB'
@@ -93,10 +104,6 @@ def data_loop():
     # the amount but one millisecond is more than enough
     s.write(b'\x00\xf8\x00\x00\x00\xe0')
     time.sleep(0.001)
-
-    # Open file to output to
-    # binary_output = open('out.bin', 'wb')
-    # raw_data = open('data.out', 'w')
 
     # Temporary storage for parsing
     sync = False
@@ -113,41 +120,79 @@ def data_loop():
     # See mindset_communication_protocol.pdf for parsing
     while True:
         data = s.read().hex()
+
         if data == 'aa' and not sync:
             sync = True
             plength = False
             payload_length = 0
             payload_storage = []
+
         elif data == 'aa' and sync:
             sync = False
             plength = True
+
         elif sync:
             sync = False
+
         elif plength and int(data, 16) < 170:
             plength = False
             payload_length = int(data, 16)
+
         elif plength and int(data, 16) <= 170:
             pass
+
         elif payload_length > 0:
             payload_storage.append(data)
             payload_length -= 1
+
         elif payload_length == 0 and payload_storage != [] and calc_chksum(payload_storage, data):
             value = parse_payload(payload_storage)
+
             if value[0] == 'raw':
                 counter[0] += 1
                 counter[1] += value[1]
+
                 # Determine if point is to be graphed
                 if counter[0] >= average:
                     counter[1] /= average
                     # Transform raw wave values for graphing
+                    # Formula for raw wave value to voltage: [rawValue * (1.8 / 4096)] / 2000
+                    # http://support.neurosky.com/kb/science/how-to-convert-raw-values-to-voltage
                     y_values.append(((counter[1]+2048)/4096)*556)
                     del y_values[0]
+
+                    if text_mode:
+                        print(counter[1])
+
+                    if save_mode:
+                        save_file.write(str(counter[1])+'\n')
+
+                    if graphic_mode:
+                        draw_point(y_values)
+
                     counter = [0, 0]
-                    draw_point(y_values)
 
 
-# Serial reader must be in separate thread, tkinter must be run on main thread
-thread = threading.Thread(target=data_loop)
-thread.start()
+parser = argparse.ArgumentParser()
+parser.add_argument('-s', '--save', action='store_true', help='saves to data.out')
+parser.add_argument('-g', '--graphics', action='store_true', help='displays data live to a graph')
+parser.add_argument('-t', '--text', action='store_true', help='print live data as text to console')
 
-start_loop()
+args = parser.parse_args()
+
+graphic_mode = parser.parse_args(['-g'])
+save_mode = parser.parse_args(['-s'])
+text_mode = parser.parse_args(['-t'])
+
+if save_mode:
+    save_file = open('data-'+str(datetime.datetime.now()).replace(' ', '-').replace(':', '-')[:-7]+'.out', 'w')
+
+# Load arguments
+if graphic_mode:
+    # Serial reader must be in separate thread, tkinter must be run on main thread
+    thread = threading.Thread(target=data_loop)
+    thread.start()
+    start_loop()
+
+elif text_mode:
+    data_loop()
