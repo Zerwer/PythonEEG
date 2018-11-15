@@ -83,8 +83,17 @@ def parse_payload(packet):
         # Val is final output
         return ['raw', val]
     else:
+        val = []
+        x = 0
+        buffer = ''
+        for byte in processed:
+            buffer+=byte
+            x+=1
+            if x % 3 == 0:
+                val.append(buffer)
+                buffer = ''
         # Processed is final output
-        return ['processed', processed]
+        return ['processed', val]
 
 
 def data_loop():
@@ -171,12 +180,14 @@ def data_loop():
                         draw_point(y_values)
 
                     counter = [0, 0]
+            elif value[0] == 'processed':
+                print(value[1])
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--save', action='store_true', help='saves to data.out')
 parser.add_argument('-g', '--graphics', action='store_true', help='displays data live to a graph')
-parser.add_argument('-t', '--text', action='store_true', help='print live data as text to console')
+parser.add_argument('-t', '--text', action='store_true', help='print all live data as text to console')
 
 args = parser.parse_args()
 
