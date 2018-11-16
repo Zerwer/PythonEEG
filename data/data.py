@@ -1,9 +1,16 @@
 # File for reading and parsing packets
 # See mindset_communication_protocol.pdf for packet breakdown
-from graphics import *
 import serial
 import time
 import datetime
+
+# [0] is if saving should be set, [1] is the letter being saved, [2] is file code
+save_info = [False, '', 0]
+
+# Storage for y_values that must be graphed, must always have 900 values
+y_values = []
+for z in range(900):
+    y_values.append(0)
 
 
 # Calculates the checksum given the payload and corresponding checksum
@@ -98,7 +105,7 @@ def parse_payload(packet):
 # save_mode, saves to out file
 # graphic_mode, if raw data should be graphed
 # average, only used if graphic_mode is true, how many points should be averaged to graph
-def data_loop(text_mode, save_mode, graphic_mode, average):
+def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
     # Device used
     device = '/dev/tty.HC-06-DevB'
 
@@ -122,11 +129,6 @@ def data_loop(text_mode, save_mode, graphic_mode, average):
 
     if save_mode:
         save_file = open('data-' + str(datetime.datetime.now()).replace(' ', '-').replace(':', '-')[:-7] + '.out', 'w')
-
-    # Storage for y_values that must be graphed, must always have 900 values
-    y_values = []
-    for i in range(900):
-        y_values.append(0)
 
     # See mindset_communication_protocol.pdf for parsing
     while True:
@@ -174,7 +176,6 @@ def data_loop(text_mode, save_mode, graphic_mode, average):
                         # http://support.neurosky.com/kb/science/how-to-convert-raw-values-to-voltage
                         y_values.append(((counter[1]+2048)/4096)*556)
                         del y_values[0]
-                        draw_point(y_values)
                         counter = [0, 0]
 
                 # Text stuff
@@ -185,5 +186,12 @@ def data_loop(text_mode, save_mode, graphic_mode, average):
                 if save_mode:
                     save_file.write(str(value[1])+'\n')
 
+                if letter_save and save_info[0]:
+                    file = open('letters/' + save_info[1] + str(save_info[2]) + '.txt', 'a+')
+                    file.write(str(value[1])+'\n')
+                    print(value[1])
+                    file.close()
+
             elif value[0] == 'processed':
-                print(value[1])
+                if text_mode:
+                    print(value[1])
