@@ -1,3 +1,4 @@
+# File for graphical functions
 from tkinter import *
 
 root = Tk()

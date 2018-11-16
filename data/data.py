@@ -1,11 +1,9 @@
+# File for reading and parsing packets
 # See mindset_communication_protocol.pdf for packet breakdown
 from graphics import *
 import serial
 import time
-import threading
-import sys
 import datetime
-import argparse
 
 
 # Calculates the checksum given the payload and corresponding checksum
@@ -87,8 +85,8 @@ def parse_payload(packet):
         x = 0
         buffer = ''
         for byte in processed:
-            buffer+=byte
-            x+=1
+            buffer += byte
+            x += 1
             if x % 3 == 0:
                 val.append(buffer)
                 buffer = ''
@@ -96,10 +94,11 @@ def parse_payload(packet):
         return ['processed', val]
 
 
-def data_loop():
-    # How many raw values used for one graphed point
-    average = 10
-
+# text_mode, enables text output to console
+# save_mode, saves to out file
+# graphic_mode, if raw data should be graphed
+# average, only used if graphic_mode is true, how many points should be averaged to graph
+def data_loop(text_mode, save_mode, graphic_mode, average):
     # Device used
     device = '/dev/tty.HC-06-DevB'
 
@@ -120,6 +119,9 @@ def data_loop():
     payload_length = 0
     payload_storage = []
     counter = [0, 0]
+
+    if save_mode:
+        save_file = open('data-' + str(datetime.datetime.now()).replace(' ', '-').replace(':', '-')[:-7] + '.out', 'w')
 
     # Storage for y_values that must be graphed, must always have 900 values
     y_values = []
@@ -157,53 +159,31 @@ def data_loop():
         elif payload_length == 0 and payload_storage != [] and calc_chksum(payload_storage, data):
             value = parse_payload(payload_storage)
 
+            # If packet is raw data
             if value[0] == 'raw':
-                counter[0] += 1
-                counter[1] += value[1]
+                # Graphic stuff
+                if graphic_mode:
+                    counter[0] += 1
+                    counter[1] += value[1]
 
-                # Determine if point is to be graphed
-                if counter[0] >= average:
-                    counter[1] /= average
-                    # Transform raw wave values for graphing
-                    # Formula for raw wave value to voltage: [rawValue * (1.8 / 4096)] / 2000
-                    # http://support.neurosky.com/kb/science/how-to-convert-raw-values-to-voltage
-                    y_values.append(((counter[1]+2048)/4096)*556)
-                    del y_values[0]
-
-                    if text_mode:
-                        print(counter[1])
-
-                    if save_mode:
-                        save_file.write(str(counter[1])+'\n')
-
-                    if graphic_mode:
+                    # Determine if point is to be graphed
+                    if counter[0] >= average:
+                        counter[1] /= average
+                        # Transform raw wave values for graphing
+                        # Formula for raw wave value to voltage: [rawValue * (1.8 / 4096)] / 2000
+                        # http://support.neurosky.com/kb/science/how-to-convert-raw-values-to-voltage
+                        y_values.append(((counter[1]+2048)/4096)*556)
+                        del y_values[0]
                         draw_point(y_values)
+                        counter = [0, 0]
 
-                    counter = [0, 0]
+                # Text stuff
+                if text_mode:
+                    print(value[1])
+
+                # Save stuff
+                if save_mode:
+                    save_file.write(str(value[1])+'\n')
+
             elif value[0] == 'processed':
                 print(value[1])
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-s', '--save', action='store_true', help='saves to data.out')
-parser.add_argument('-g', '--graphics', action='store_true', help='displays data live to a graph')
-parser.add_argument('-t', '--text', action='store_true', help='print all live data as text to console')
-
-args = parser.parse_args()
-
-graphic_mode = parser.parse_args(['-g'])
-save_mode = parser.parse_args(['-s'])
-text_mode = parser.parse_args(['-t'])
-
-if save_mode:
-    save_file = open('data-'+str(datetime.datetime.now()).replace(' ', '-').replace(':', '-')[:-7]+'.out', 'w')
-
-# Load arguments
-if graphic_mode:
-    # Serial reader must be in separate thread, tkinter must be run on main thread
-    thread = threading.Thread(target=data_loop)
-    thread.start()
-    start_loop()
-
-elif text_mode:
-    data_loop()
