@@ -186,6 +186,7 @@ def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
                 if save_mode:
                     save_file.write(str(value[1])+'\n')
 
+                # Save data if true to letter and number specified
                 if letter_save and save_info[0]:
                     file = open('letters/' + save_info[1] + str(save_info[2]) + '.txt', 'a+')
                     file.write(str(value[1])+'\n')
