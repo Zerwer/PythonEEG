@@ -7,6 +7,14 @@ import datetime
 # [0] is if saving should be set, [1] is the letter being saved, [2] is file code
 save_info = [False, '', 0]
 
+# If data should be used as validation
+validation = False
+
+if validation:
+    path = 'validation/'
+else:
+    path = 'letters/'
+
 # Storage for y_values that must be graphed, must always have 900 values
 y_values = []
 for z in range(900):
@@ -188,8 +196,8 @@ def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
 
                 # Save data if true to letter and number specified
                 if letter_save and save_info[0]:
-                    file = open('letters/' + save_info[1] + str(save_info[2]) + '.txt', 'a+')
-                    file.write(str(value[1])+'\n')
+                    file = open(path + save_info[1] + str(save_info[2]) + '.csv', 'a+')
+                    file.write(str(value[1])+',')
                     print(value[1])
                     file.close()
 
