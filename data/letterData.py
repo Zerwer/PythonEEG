@@ -7,10 +7,12 @@ import threading
 
 # Set values for data
 wait_time = 1000  # How long to wait in between exposures
-expose_time = 2000  # How long letter should be exposed
+expose_time = 3000  # How long letter should be exposed
 # Letters to be sampled
-samples = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-           'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+# samples = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+#            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+samples = ['A', 'B']
 
 # Set dimensions
 w = 900
