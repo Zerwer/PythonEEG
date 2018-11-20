@@ -4,6 +4,7 @@ from tkinter import *
 import os
 import random as r
 import threading
+import numpy as np
 
 # Set values for data
 wait_time = 1000  # How long to wait in between exposures
@@ -32,17 +33,26 @@ def display_letter(canvas, wait):
 
     if wait:
 
-        values = open(path + save_info[1] + str(save_info[2]) + '.csv', 'r').read()[:-1].split(',')
-        if len(values) < 1500:
-            os.remove(path + save_info[1] + str(save_info[2]) + '.csv')
+        file_list = []
+        for name in os.listdir(path[:-1]):
+            if name[0] == save_info[1]:
+                file_list.append(int(name[1:-4]))
+
+        if len(file_list) < 1:
+            code = 0
+
         else:
-            file = open(path + save_info[1] + str(save_info[2]) + '.csv', 'w')
-            for i in range(1500):
-                file.write(values[i]+',')
+            code = max(file_list) + 1
+
+        if len(save_info[2]) >= 1500:
+            # print(np.abs(np.fft.rfft(info))) for fft value
+            np.savetxt(path+save_info[1]+str(code)+'.csv', np.array(save_info[2][:1500]), delimiter=',')
+        else:
+            pass
 
         save_info[0] = False
         save_info[1] = ''
-        save_info[2] = 0
+        save_info[2] = []
 
         canvas.create_text(w / 2, h / 2, font="Arial " + str(int(round(h / 3, 0))), text='Wait', anchor='center')
         root.after(wait_time, display_letter, canvas, False)
@@ -53,17 +63,6 @@ def display_letter(canvas, wait):
         # For the next 5 sec collect data
         save_info[0] = True
         save_info[1] = letter.lower()
-
-        file_list = []
-        for name in os.listdir(path[:-1]):
-            if name[0] == letter.lower():
-                file_list.append(int(name[1:-4]))
-
-        if len(file_list) < 1:
-            save_info[2] = 0
-
-        else:
-            save_info[2] = max(file_list) + 1
 
         root.after(expose_time, display_letter, canvas, True)
 

@@ -4,8 +4,8 @@ import serial
 import time
 import datetime
 
-# [0] is if saving should be set, [1] is the letter being saved, [2] is file code
-save_info = [False, '', 0]
+# [0] is if saving is on [1] is letter being saved [2] is set of data to be saved
+save_info = [False, '', []]
 
 # If data should be used as validation
 validation = False
@@ -196,10 +196,8 @@ def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
 
                 # Save data if true to letter and number specified
                 if letter_save and save_info[0]:
-                    file = open(path + save_info[1] + str(save_info[2]) + '.csv', 'a+')
-                    file.write(str(value[1])+',')
+                    save_info[2].append(value[1])
                     print(value[1])
-                    file.close()
 
             elif value[0] == 'processed':
                 if text_mode:
