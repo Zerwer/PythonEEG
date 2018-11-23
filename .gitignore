@@ -108,3 +108,4 @@ venv.bak/
 holder/
 letters/
 validation/
+model.h5
