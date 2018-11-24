@@ -45,7 +45,6 @@ def display_letter(canvas, wait):
             code = max(file_list) + 1
 
         if len(save_info[2]) >= 1500:
-            # print(np.abs(np.fft.rfft(info))) for fft value
             np.savetxt(path+save_info[1]+str(code)+'.csv', np.array(save_info[2][:1500]), delimiter=',')
         else:
             pass

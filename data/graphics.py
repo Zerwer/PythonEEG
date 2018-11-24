@@ -10,6 +10,7 @@ graphing_area = Canvas(root, width=900, height=556)
 graphing_area.pack()
 
 
+# Draws a x-axis scale for live graph
 def scale():
     graphing_area.create_text(450, 530, text='Time (Seconds)', anchor='center', font="Arial 20 bold")
     graphing_area.create_rectangle(849, 480, 847, 450, fill='black')
