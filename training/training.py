@@ -46,7 +46,7 @@ model = Sequential([
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-model.fit(x_train, y_train, validation_data=(x_valid, y_valid), shuffle=True, batch_size=30, epochs=100)
+model.fit(x_train, y_train, validation_data=(x_valid, y_valid), shuffle=True, batch_size=30, epochs=110)
 
 # Save mode (currently good enough to be considered non-random)
 model.save('model.h5')
