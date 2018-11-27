@@ -1,6 +1,9 @@
+# Unsure majority of time but more correct then wrong when thinking of
+# Requires more data for training
 from data import *
 from tkinter import *
 from keras.models import load_model
+import numpy as np
 import threading
 
 # Time variables
@@ -28,9 +31,15 @@ thread.start()
 
 # Predicts the input values and returns predicted letter
 def predict(values, model):
-    # TODO stuff
-    print(values[0])
-    return 'A'
+    processed_data = np.expand_dims(np.array([np.abs(np.fft.rfft(np.array(values)))/85000]), 3)
+    prediction = model.predict(processed_data)
+    print(prediction[0][0])
+    if prediction[0][0] < 0.1:
+        return 'B'
+    elif prediction[0][0] > 0.9:
+        return 'A'
+    else:
+        return '?'
 
 
 def display_prediction(canvas, frame, model):
