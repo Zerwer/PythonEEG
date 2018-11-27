@@ -7,8 +7,11 @@ import datetime
 # [0] is if saving is on [1] is letter being saved [2] is set of data to be saved
 save_info = [False, '', []]
 
-# Saves last value
-last_value = 0
+# Saves last 2000 values
+last_values = []
+
+for x in range(0, 2000):
+    last_values.append(0)
 
 # If data should be used as validation
 validation = False
@@ -174,7 +177,8 @@ def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
 
             # If packet is raw data
             if value[0] == 'raw':
-                last_value = value[1]
+                last_values.append(value[1])
+                del last_values[0]
 
                 # Graphic stuff
                 if graphic_mode:

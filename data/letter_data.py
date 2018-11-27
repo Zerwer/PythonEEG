@@ -28,7 +28,7 @@ graphing_area.pack()
 
 
 # Function to display letter to be thought of, will set saving variable
-def display_letter(canvas, wait):
+def display_letter(canvas, frame, wait):
     canvas.delete('all')
 
     if wait:
@@ -54,7 +54,7 @@ def display_letter(canvas, wait):
         save_info[2] = []
 
         canvas.create_text(w / 2, h / 2, font="Arial " + str(int(round(h / 3, 0))), text='Wait', anchor='center')
-        root.after(wait_time, display_letter, canvas, False)
+        frame.after(wait_time, display_letter, canvas, frame, False)
 
     else:
         letter = samples[r.randint(0, len(samples) - 1)]
@@ -63,7 +63,7 @@ def display_letter(canvas, wait):
         save_info[0] = True
         save_info[1] = letter.lower()
 
-        root.after(expose_time, display_letter, canvas, True)
+        frame.after(expose_time, display_letter, canvas, frame, True)
 
 
 thread = threading.Thread(target=data_loop, args=[False, False, False, 1, True])
@@ -71,5 +71,5 @@ thread.start()
 
 graphing_area.create_text(w/2, h/2, font="Arial "+str(int(round(h/3, 0))), text='Loading...', anchor='center')
 
-root.after(10000, display_letter, graphing_area, False)
+root.after(10000, display_letter, graphing_area, root, False)
 root.mainloop()
