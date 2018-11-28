@@ -1,3 +1,8 @@
+# Currently using two letters with ~400 samples each with around 60% validation accuracy
+# Prediction for better results:
+# 1000 samples per letter 65%
+# 2000 samples per letter 70%
+# 3000 samples per letter 75%
 import numpy as np
 import os
 from keras.layers import Dense, Flatten, Dropout
@@ -46,7 +51,7 @@ model = Sequential([
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-model.fit(x_train, y_train, validation_data=(x_valid, y_valid), shuffle=True, batch_size=30, epochs=110)
+model.fit(x_train, y_train, validation_data=(x_valid, y_valid), shuffle=True, batch_size=32, epochs=200)
 
-# Save mode (currently good enough to be considered non-random)
+# Save mode (results currently good enough to be considered non-random)
 model.save('model.h5')
