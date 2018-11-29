@@ -5,10 +5,11 @@ from tkinter import *
 from keras.models import load_model
 import numpy as np
 import threading
+import time
 
 # Time variables
 start_wait = 10000
-wait = 3100
+wait = 2100
 
 # Set dimensions
 w = 900
@@ -45,6 +46,9 @@ def predict(values, model):
 def display_prediction(canvas, frame, model):
     prediction = predict(last_values[-1500:], model)
 
+    canvas.delete('all')
+    canvas.create_text(w / 2, h / 2, font="Arial " + str(int(round(h / 3, 0))), text='Collecting...', anchor='center')
+    time.sleep(1)
     canvas.delete('all')
     canvas.create_text(w / 2, h / 2, font="Arial " + str(int(round(h / 3, 0))), text=prediction, anchor='center')
 
