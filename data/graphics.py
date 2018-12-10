@@ -2,6 +2,7 @@
 from data import *
 from tkinter import *
 from PIL import Image, ImageDraw, ImageFont
+import os
 
 root = Tk()
 root.geometry('900x556')
@@ -30,15 +31,24 @@ def draw_point():
     scale()
 
     for i in range(0, len(y_values)-1):
-        graphing_area.create_rectangle(int(i), int(int(y_values[i])/(-1))+556,
-                                       int(i+1), int(int(y_values[i+1])/(-1))+556)
+        graphing_area.create_rectangle(int(i), int(int(y_values[i]) / (-1)) + 556,
+                                       int(i + 1), int(int(y_values[i + 1]) / (-1)) + 556)
 
     root.after(500, draw_point)
 
 
+# Takes centered x and y and converts to top left anchor for PIL
+def center_anchor(x, y, text, font, draw):
+    w, h = draw.textsize(text, font=font)
+    new_x = x - w / 2
+    new_y = y - h / 2
+    return [new_x, new_y]
+
+
+# Called when the s key is pressed, saves the current displayed data to figure.jpg in screenshots/
 def save_data(event):
     black = (0, 0, 0)
-    # font = ImageFont.truetype('Arial.ttf', 10)
+    font = ImageFont.truetype('Arial.ttf', 20)
 
     screenshot = Image.new('RGB', (900, 556), (255, 255, 255))
     draw = ImageDraw.Draw(screenshot)
@@ -46,9 +56,22 @@ def save_data(event):
     for i in range(0, len(y_values)-1):
         draw.line([int(i), int(int(y_values[i])/(-1))+556, int(i+1), int(int(y_values[i+1])/(-1))+556], black)
 
-    draw.text([450, 530], 'Time (Seconds)', black, font, align='center')
+    draw.text(center_anchor(450, 530, 'Time (Seconds)', font, draw), 'Time (Seconds)', black, font)
+    draw.line([849, 480, 847, 450], black)
+    draw.text(center_anchor(848, 430, '1', font, draw), '1', black, font)
+    draw.line([645, 480, 643, 450], black)
+    draw.text(center_anchor(644, 430, '5', font, draw), '5', black, font)
+    draw.line([389, 480, 387, 450], black)
+    draw.text(center_anchor(388, 430, '10', font, draw), '10', black, font)
+    draw.line([135, 480, 133, 450], black)
+    draw.text(center_anchor(134, 430, '15', font, draw), '15', black, font)
 
-    screenshot.save('figure.jpg')
+    prefix = [0]
+    for name in os.listdir('screenshots'):
+        print(name)
+        prefix.append(int(name[6:-4]))
+
+    screenshot.save('screenshots/figure' + str(max(prefix) + 1) + '.jpg')
 
 
 # Lets main graphical loop begin after serial reader initiated

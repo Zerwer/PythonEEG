@@ -10,7 +10,7 @@ save_info = [False, '', []]
 # Saves last 2000 values
 last_values = []
 
-for x in range(0, 2000):
+for z in range(0, 2000):
     last_values.append(0)
 
 # If data should be used as validation
