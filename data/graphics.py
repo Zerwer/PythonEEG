@@ -1,7 +1,7 @@
 # File for graphical functions
 from data import *
 from tkinter import *
-# from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 root = Tk()
 root.geometry('900x556')
@@ -36,8 +36,23 @@ def draw_point():
     root.after(500, draw_point)
 
 
+def save_data(event):
+    black = (0, 0, 0)
+    # font = ImageFont.truetype('Arial.ttf', 10)
+
+    screenshot = Image.new('RGB', (900, 556), (255, 255, 255))
+    draw = ImageDraw.Draw(screenshot)
+
+    for i in range(0, len(y_values)-1):
+        draw.line([int(i), int(int(y_values[i])/(-1))+556, int(i+1), int(int(y_values[i+1])/(-1))+556], black)
+
+    draw.text([450, 530], 'Time (Seconds)', black, font, align='center')
+
+    screenshot.save('figure.jpg')
+
+
 # Lets main graphical loop begin after serial reader initiated
 def start_loop():
     root.after(500, draw_point)
-    # root.bind('s', save_data)
+    root.bind('s', save_data)
     root.mainloop()
