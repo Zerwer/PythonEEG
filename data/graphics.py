@@ -1,6 +1,7 @@
 # File for graphical functions
 from data import *
 from tkinter import *
+# from PIL import Image, ImageDraw, ImageFont
 
 root = Tk()
 root.geometry('900x556')
@@ -28,10 +29,9 @@ def draw_point():
     graphing_area.delete('all')  # Clear every redraw
     scale()
 
-    i = 0
-    for point in y_values:
-        graphing_area.create_rectangle(int(i), int(int(point)/(-1))+556, int(i), int(int(point)/(-1))+556)
-        i += 1
+    for i in range(0, len(y_values)-1):
+        graphing_area.create_rectangle(int(i), int(int(y_values[i])/(-1))+556,
+                                       int(i+1), int(int(y_values[i+1])/(-1))+556)
 
     root.after(500, draw_point)
 
@@ -39,4 +39,5 @@ def draw_point():
 # Lets main graphical loop begin after serial reader initiated
 def start_loop():
     root.after(500, draw_point)
+    # root.bind('s', save_data)
     root.mainloop()
