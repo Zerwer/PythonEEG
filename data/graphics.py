@@ -57,18 +57,17 @@ def save_data(event):
         draw.line([int(i), int(int(y_values[i])/(-1))+556, int(i+1), int(int(y_values[i+1])/(-1))+556], black)
 
     draw.text(center_anchor(450, 530, 'Time (Seconds)', font, draw), 'Time (Seconds)', black, font)
-    draw.line([849, 480, 847, 450], black)
+    draw.line([848, 480, 848, 450], black, 2)
     draw.text(center_anchor(848, 430, '1', font, draw), '1', black, font)
-    draw.line([645, 480, 643, 450], black)
+    draw.line([644, 480, 644, 450], black, 2)
     draw.text(center_anchor(644, 430, '5', font, draw), '5', black, font)
-    draw.line([389, 480, 387, 450], black)
+    draw.line([388, 480, 388, 450], black, 2)
     draw.text(center_anchor(388, 430, '10', font, draw), '10', black, font)
-    draw.line([135, 480, 133, 450], black)
+    draw.line([134, 480, 134, 450], black, 2)
     draw.text(center_anchor(134, 430, '15', font, draw), '15', black, font)
 
     prefix = [0]
     for name in os.listdir('screenshots'):
-        print(name)
         prefix.append(int(name[6:-4]))
 
     screenshot.save('screenshots/figure' + str(max(prefix) + 1) + '.jpg')
