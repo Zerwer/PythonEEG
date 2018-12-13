@@ -102,6 +102,7 @@ def parse_payload(packet):
         # Val is final output
         return ['raw', val]
     else:
+        # Processed useless to me
         val = []
         x = 0
         buffer = ''

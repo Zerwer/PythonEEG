@@ -2,6 +2,7 @@
 from data import *
 from tkinter import *
 from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 import os
 
 root = Tk()
@@ -10,6 +11,12 @@ root.title('EEG Raw Data')
 
 graphing_area = Canvas(root, width=900, height=556)
 graphing_area.pack()
+
+sorted_values = [[], [], [], [], []]
+
+for wave_type in sorted_values:
+    for z in range(0, 100):
+        wave_type.append(0)
 
 
 # Draws a x-axis scale for live graph
@@ -26,15 +33,54 @@ def scale():
 
 
 # Function called to redraw points
-def draw_point():
+def draw_point(fft):
     graphing_area.delete('all')  # Clear every redraw
     scale()
 
     for i in range(0, len(y_values)-1):
-        graphing_area.create_rectangle(int(i), int(int(y_values[i]) / (-1)) + 556,
-                                       int(i + 1), int(int(y_values[i + 1]) / (-1)) + 556)
+        graphing_area.create_rectangle(int(i), int(int(y_values[i]) / (-1)) + 400,  # Set y addition to 556 for center
+                                       int(i + 1), int(int(y_values[i + 1]) / (-1)) + 400)
+    '''
+    for type_set in sorted_values:
+        for values in type_set:
+    '''
 
-    root.after(500, draw_point)
+    if fft:
+        fft = False
+        data = np.array(y_values[-511:])
+        fftdata = np.abs(np.fft.rfft((data*(1.8/4096))*500))
+        fftfreq = np.fft.rfftfreq(data.size, d=1. / 511)
+
+        bands = [0, 0, 0, 0, 0]
+        total = [0, 0, 0, 0, 0]
+
+        for i in range(0, len(fftfreq)):
+            if 0 <= fftfreq[i] <= 4:
+                bands[0] += fftdata[i]
+                total[0] += 1
+            elif 4 <= fftfreq[i] <= 8:
+                bands[1] += fftdata[i]
+                total[1] += 1
+            elif 8 <= fftfreq[i] <= 12:
+                bands[2] += fftdata[i]
+                total[2] += 1
+            elif 12 <= fftfreq[i] <= 30:
+                bands[3] += fftdata[i]
+                total[3] += 1
+            elif 30 <= fftfreq[i] <= 45:
+                bands[4] += fftdata[i]
+                total[4] += 1
+
+        # Try not calculating average?
+        for i in range(0, len(bands)):
+            sorted_values[i].append(bands[i] / total[i])
+            del sorted_values[i][0]
+            print(bands[i] / total[i])
+
+    else:
+        fft = True
+
+    root.after(500, draw_point, fft)
 
 
 # Takes centered x and y and converts to top left anchor for PIL
@@ -46,7 +92,7 @@ def center_anchor(x, y, text, font, draw):
 
 
 # Called when the s key is pressed, saves the current displayed data to figure.jpg in screenshots/
-def save_data(event):
+def save_data():
     black = (0, 0, 0)
     font = ImageFont.truetype('Arial.ttf', 20)
 
@@ -75,6 +121,6 @@ def save_data(event):
 
 # Lets main graphical loop begin after serial reader initiated
 def start_loop():
-    root.after(500, draw_point)
+    root.after(500, draw_point, False)
     root.bind('s', save_data)
     root.mainloop()
