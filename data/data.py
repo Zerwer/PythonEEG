@@ -133,6 +133,7 @@ def data_loop(text_mode, save_mode, graphic_mode, average, letter_save):
     # Must sleep for time of one bit at 9600 baud, 1(second) / 9600 is
     # the amount but one millisecond is more than enough
     s.write(b'\x00\xf8\x00\x00\x00\xe0')
+    #s.write(b'\x00\x00\x00\x00\xf8\xe3')
     time.sleep(0.001)
 
     # Temporary storage for parsing
