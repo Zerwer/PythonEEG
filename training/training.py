@@ -15,6 +15,15 @@ y_train = []
 x_valid = []
 y_valid = []
 
+
+# Takes fft array and filters frequencies above 45 Hz
+def fft_filter_high_frequencies(raw_values):
+    fft_data = np.abs(np.fft.rfft(raw_values))
+    fft_freq = np.fft.rfftfreq(1500, d=1. / 1500)
+    # TODO simplify by removing n elements from end
+    return fft_data
+
+
 # Prepare training set
 for file in os.listdir('letters'):
     if file[:1] == 'a':
@@ -22,6 +31,7 @@ for file in os.listdir('letters'):
     else:
         y_train.append(0)
     # Use fft and collect real numbers divided by 85000 to get input float
+    x_train.append(fft_filter_high_frequencies(np.genfromtxt('letters/'+file, delimiter=',')))
     x_train.append(np.abs(np.fft.rfft(np.genfromtxt('letters/'+file, delimiter=',')))/85000)
 
 x_train = np.expand_dims(np.array(x_train), 3)

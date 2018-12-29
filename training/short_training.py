@@ -54,5 +54,5 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 
 model.fit(x_train, y_train, validation_data=(x_valid, y_valid), shuffle=True, batch_size=32, epochs=200)
 
-# Save mode (results currently good enough to be considered non-random)
+# Save model
 model.save('model.h5')
